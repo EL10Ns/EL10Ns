@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            left: 0;
+        }
+        .leaflet-container { font-size: 1rem; }
+        .info-panel, .legend-panel {
+            position: fixed;
+            z-index: 9999;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #555;
+            padding: 10px 14px;
+            font-family: Arial;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+        .info-panel {
+            top: 12px;
+            left: 50px;
+            max-width: 520px;
+        }
+        .legend-panel {
+            bottom: 38px;
+            left: 50px;
+            width: 295px;
+            font-size: 12px;
+            max-height: 58vh;
+            overflow-y: auto;
+            border-width: 2px;
+        }
+        hr {
+            margin: 8px 0;
+        }
+        .legend-color {
+            display: inline-block;
+            width: 11px;
+            height: 11px;
+            border: 1px solid #333;
+            margin-right: 6px;
+        }
+        .dash-sample {
+            display: inline-block;
+            width: 24px;
+            border-top: 4px dashed #111;
+            margin-right: 7px;
+            vertical-align: middle;
+        }
+        .fill-sample {
+            display: inline-block;
+            width: 13px;
+            height: 13px;
+            background: #f2e8d5;
+            border: 1px solid #111;
+            margin-right: 7px;
+        }
+    </style>
+</head>
+<body>
+<div class="info-panel">
+    <b>DAMAC Properties — Dubai Location Map</b><br>
+    <span style="font-size:12px;">Black dashed line = approximate Dubai Emirate boundary. DAMAC pins show major Dubai construction/investment zones.</span>
+</div>
+<div class="legend-panel">
+    <b>Map guide</b><br>
+    <div style="margin-top:6px;"><span class="dash-sample"></span>Dubai separated from other UAE emirates</div>
+    <div><span class="fill-sample"></span>Dubai highlighted area</div>
+    <hr>
+    <b>DAMAC location pins</b><br>
+    <div><span class="legend-color" style="background:#d73027;"></span>DAMAC Hills</div>
+    <div><span class="legend-color" style="background:#4575b4;"></span>DAMAC Lagoons</div>
+    <div><span class="legend-color" style="background:#542788;"></span>DAMAC Islands</div>
+    <div><span class="legend-color" style="background:#fdae61;"></span>DAMAC Hills 2</div>
+    <div><span class="legend-color" style="background:#1a9850;"></span>DAMAC Riverside</div>
+    <div><span class="legend-color" style="background:#762a83;"></span>Business Bay/Canal</div>
+    <div><span class="legend-color" style="background:#f781bf;"></span>Safa/SZR</div>
+    <div><span class="legend-color" style="background:#5ab4ac;"></span>Dubai Maritime City</div>
+    <div><span class="legend-color" style="background:#313695;"></span>Marina/Harbour/Media City</div>
+    <div><span class="legend-color" style="background:#dfc27d;"></span>JVC</div>
+    <div><span class="legend-color" style="background:#bdbdbd;"></span>Dubai South</div>
+    <div><span class="legend-color" style="background:#000;"></span>Downtown/Burj Area</div>
+    <br><small>Boundary and pins are approximate for presentation/sales education, not official cadastral/legal boundaries.</small>
+</div>
+<div id="map"></div>
+<script>
+    var map = L.map("map").setView([25.05, 55.25], 9.4);
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: "abcd"
+    }).addTo(map);
+
+    // Dubai approximate boundary polygon
+    var dubaiBoundary = L.polygon([
+        [25.32, 55.135], [25.33, 55.33], [25.25, 55.515], [25.035, 55.565],
+        [24.815, 55.515], [24.7, 55.355], [24.755, 55.05], [24.93, 54.905],
+        [25.1, 54.995], [25.23, 55.08], [25.32, 55.135]
+    ], {
+        color: "#111111",
+        dashArray: "8, 6",
+        fillColor: "#f2e8d5",
+        fillOpacity: 0.22,
+        weight: 4,
+        smoothFactor: 1.0
+    }).addTo(map);
+    dubaiBoundary.bindTooltip("Approximate Dubai Emirate boundary — other UAE areas outside this line", {sticky: true});
+    dubaiBoundary.bindPopup("Approximate Dubai Emirate boundary. DAMAC pins inside/near this highlighted Dubai area.");
+
+    // Text labels for other emirates
+    var dubaiLabel = L.marker([25.075, 55.285], {icon: L.divIcon({html: "<div style='font-family:Arial; font-weight:700; font-size:18px; color:#111; background:rgba(255,255,255,0.80); padding:4px 8px; border-radius:6px; border:1px solid #333; white-space:nowrap;'>DUBAI EMIRATE</div>", className: "empty"})}).addTo(map);
+    L.marker([25.33, 55.53], {icon: L.divIcon({html: "<div style='font-family:Arial; font-size:13px; color:#555; background:rgba(255,255,255,0.75); padding:4px 7px; border-radius:6px; border:1px solid #aaa; white-space:nowrap;'>Sharjah / Ajman<br><span style='font-size:11px;'>Other UAE emirates</span></div>", className: "empty"})}).addTo(map);
+    L.marker([24.79, 54.85], {icon: L.divIcon({html: "<div style='font-family:Arial; font-size:13px; color:#555; background:rgba(255,255,255,0.75); padding:4px 7px; border-radius:6px; border:1px solid #aaa; white-space:nowrap;'>Abu Dhabi Emirate<br><span style='font-size:11px;'>Other UAE emirate</span></div>", className: "empty"})}).addTo(map);
+    L.marker([24.78, 55.68], {icon: L.divIcon({html: "<div style='font-family:Arial; font-size:13px; color:#555; background:rgba(255,255,255,0.75); padding:4px 7px; border-radius:6px; border:1px solid #aaa; white-space:nowrap;'>Rest of UAE<br><span style='font-size:11px;'>outside Dubai line</span></div>", className: "empty"})}).addTo(map);
+
+    // DAMAC markers with popups
+    function addDamacMarker(lat, lng, color, iconName, title, popupHtml) {
+        var icon = L.AwesomeMarkers.icon({markerColor: color, iconColor: "white", icon: iconName, prefix: "fa"});
+        var marker = L.marker([lat, lng], {icon: icon}).addTo(map);
+        marker.bindPopup(popupHtml, {maxWidth: 350});
+        marker.bindTooltip(title, {sticky: true});
+    }
+
+    addDamacMarker(25.0247, 55.2487, "red", "home", "DAMAC Hills",
+        "<div style='font-family:Arial; width:300px;'><h4 style='margin:0 0 6px 0;'>DAMAC Hills</h4><b>Type:</b> Established golf master community<br><b>Known projects:</b> DAMAC Hills, Golf Greens, Golf Gate, Utopia, Cavalli Estates, Gems Estates, Trump International Golf Club<br><b>Typical units:</b> Studios/1–3BR apartments, townhouses, villas, mansions<br><small>Pin is approximate and represents a DAMAC construction/investment zone, not every individual building.</small></div>");
+    addDamacMarker(25.0085, 55.2632, "blue", "home", "DAMAC Lagoons",
+        "<div style='font-family:Arial; width:300px;'><h4 style='margin:0 0 6px 0;'>DAMAC Lagoons</h4><b>Type:</b> Mediterranean/waterfront-style master community<br><b>Known projects:</b> Clusters inspired by Mediterranean destinations<br><b>Typical units:</b> 4–7BR townhouses and villas<br><small>Pin is approximate and represents a DAMAC construction/investment zone, not every individual building.</small></div>");
+    addDamacMarker(25.012, 55.306, "purple", "home", "DAMAC Islands",
+        "<div style='font-family:Arial; width:300px;'><h4 style='margin:0 0 6px 0;'>DAMAC Islands</h4><b>Type:</b> Tropical island-style off-plan master community<br><b>Known projects:</b> DAMAC Islands / Islands 2<br><b>Typical units:</b> 4–5BR townhouses, 6–7BR villas<br><small>Pin is approximate and represents a DAMAC construction/investment zone, not every individual building.</small></div>");
+    addDamacMarker(24.988, 55.371, "orange", "home", "DAMAC Hills 2",
+        "<div style='font-family:Arial; width:300px;'><h4 style='margin:0 0 6px 0;'>DAMAC Hills 2</h4><b>Type:</b> Affordable family villa/townhouse community<br><b>Known projects:</b> Akoya Oxygen / DAMAC Hills 2<br><b>Typical units:</b> Townhouses and villas<br><small>Pin is approximate and represents a DAMAC construction/investment zone, not every individual building.</small></div>");
+    addDamacMarker(24.9395, 55.206, "green", "home", "DAMAC Riverside",
+        "<div style='font-family:Arial; width:300px;'><h4 style='margin:0 0 6px 0;'>DAMAC Riverside</h4><b>Type:</b> New wellness/family master community near DIP/Dubai South corridor<br><b>Known projects:</b> DAMAC Riverside<br><b>Typical units:</b> 4–5BR townhouses/villas<br><small>Pin is approximate and represents a DAMAC construction/investment zone, not every individual building.</small></div>");
+    addDamacMarker(25.185, 55.268, "darkpurple", "home", "Business Bay / Dubai Canal",
+        "<div style='font-family:Arial; width:300px;'><h4 style='margin:0 0 6px 0;'>Business Bay / Dubai Canal</h4><b>Type:</b> Luxury high-rise / branded residences district<br><b>Known projects:</b> Canal Crown, Canal Heights, Chic Tower, Altitude and other Business Bay towers<br><b>Typical units:</b> Studios, 1–4BR apartments, penthouses<br><small>Pin is approximate and represents a DAMAC construction/investment zone, not every individual building.</small></div>");
+    addDamacMarker(25.182, 55.242, "pink", "home", "Safa / Sheikh Zayed Road",
+        "<div style='font-family:Arial; width:300px;'><h4 style='margin:0 0 6px 0;'>Safa / Sheikh Zayed Road</h4><b>Type:</b> Prime tower corridor near Safa Park / SZR<br><b>Known projects:</b> Safa One, Safa Two, Safa Gate<br><b>Typical units:</b> 1–5BR luxury apartments, duplexes<br><small>Pin is approximate and represents a DAMAC construction/investment zone, not every individual building.</small></div>");
+    addDamacMarker(25.2625, 55.2795, "cadetblue", "home", "Dubai Maritime City",
+        "<div style='font-family:Arial; width:300px;'><h4 style='margin:0 0 6px 0;'>Dubai Maritime City</h4><b>Type:</b> Waterfront residential district<br><b>Known projects:</b> Chelsea Residences and other waterfront launches<br><b>Typical units:</b> 1–3BR sea-facing apartments<br><small>Pin is approximate and represents a DAMAC construction/investment zone, not every individual building.</small></div>");
+    addDamacMarker(25.087, 55.144, "darkblue", "home", "Dubai Marina / Harbour / Media City",
+        "<div style='font-family:Arial; width:300px;'><h4 style='margin:0 0 6px 0;'>Dubai Marina / Harbour / Media City</h4><b>Type:</b> Prime coastal luxury apartment corridor<br><b>Known projects:</b> DAMAC Heights, DAMAC Casa, Cavalli Tower<br><b>Typical units:</b> 1–5BR apartments, penthouses<br><small>Pin is approximate and represents a DAMAC construction/investment zone, not every individual building.</small></div>");
+    addDamacMarker(25.0526, 55.2044, "beige", "home", "JVC",
+        "<div style='font-family:Arial; width:300px;'><h4 style='margin:0 0 6px 0;'>JVC</h4><b>Type:</b> Mid-market apartment investment zone<br><b>Known projects:</b> Selected DAMAC apartment projects/stock<br><b>Typical units:</b> Studios, 1–3BR apartments<br><small>Pin is approximate and represents a DAMAC construction/investment zone, not every individual building.</small></div>");
+    addDamacMarker(24.887, 55.149, "lightgray", "home", "Dubai South",
+        "<div style='font-family:Arial; width:300px;'><h4 style='margin:0 0 6px 0;'>Dubai South</h4><b>Type:</b> Lower-ticket / long-term growth corridor<br><b>Known projects:</b> Celestia and selected DAMAC stock<br><b>Typical units:</b> Studios, 1–2BR apartments<br><small>Pin is approximate and represents a DAMAC construction/investment zone, not every individual building.</small></div>");
+    addDamacMarker(25.1972, 55.2744, "black", "home", "Downtown / Burj Area",
+        "<div style='font-family:Arial; width:300px;'><h4 style='margin:0 0 6px 0;'>Downtown / Burj Area</h4><b>Type:</b> Central Dubai luxury investment area<br><b>Known projects:</b> DAMAC Maison / Downtown-adjacent inventory<br><b>Typical units:</b> Luxury apartments / serviced-style inventory nearby<br><small>Pin is approximate and represents a DAMAC construction/investment zone, not every individual building.</small></div>");
+
+    // Hatta exclave note
+    L.circleMarker([24.804, 56.125], {radius: 6, color: "#111", fillColor: "#f2e8d5", fillOpacity: 0.85, weight: 2}).addTo(map).bindPopup("Hatta is part of Dubai Emirate but is geographically separate from the main Dubai city area. No major DAMAC project pin is shown here.").bindTooltip("Hatta — Dubai exclave, not a DAMAC project zone on this map", {sticky: true});
+    L.marker([24.815, 56.14], {icon: L.divIcon({html: "<div style='font-family:Arial; font-size:12px; color:#111; background:rgba(255,255,255,0.8); padding:3px 6px; border-radius:5px; border:1px solid #aaa; white-space:nowrap;'>Hatta<br><span style='font-size:10px;'>Dubai exclave</span></div>", className: "empty"})}).addTo(map);
+
+    map.fitBounds([[24.68, 54.78], [25.42, 55.75]]);
+    L.control.scale().addTo(map);
+</script>
+</body>
+</html>
